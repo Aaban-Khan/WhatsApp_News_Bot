@@ -1,177 +1,144 @@
-# 🚔 WhatsApp News Bot for Indian Police Officers
+#  WhatsApp News Bot
 
-A WhatsApp bot that sends a daily top-5 India news digest every morning at **8 AM IST** to registered police officers — with AI-powered summaries via Mistral and Hindi translation support.
+A WhatsApp bot that sends **top 5 India news headlines** every morning at **8 AM IST** to registered users. Users can reply with a number to get a full AI-generated summary. Supports **English and Hindi**.
 
 ---
 
-## 📁 File Structure
+## 🧩 What It Uses
+
+| Tool | Purpose |
+|------|---------|
+| Node.js | Runs the server |
+| Twilio | Sends/receives WhatsApp messages |
+| Mistral AI | Summarises and translates news |
+| SQLite | Stores officer data |
+| RSS Feeds | Gets news from NDTV, TOI, HT, The Hindu |
+
+---
+
+## 📁 Files
 
 ```
-WhatsAppBot/
-├── index.js          → Express server, cron job, webhook handler
-├── newsService.js    → Fetch & filter news from Indian RSS feeds
-├── aiService.js      → Mistral AI: headline, summary, translation
-├── whatsapp.js       → Twilio: format and send WhatsApp messages
-├── db.js             → SQLite: all database operations
-├── adminPanel.js     → Admin web UI to register officer numbers
-├── officers.db       → SQLite database (auto-created on first run)
-├── .env              → Your API keys (copy from .env.example)
+wpbot/
+├── index.js          → Main server + cron job + webhook
+├── newsService.js    → Fetches news from RSS feeds
+├── aiService.js      → AI summaries and Hindi translation
+├── whatsapp.js       → Sends WhatsApp messages via Twilio
+├── db.js             → Database read/write
+├── adminPanel.js     → Web UI to manage officers
+├── package.json      → Project dependencies
+├── .env.example      → Template for API keys
 └── README.md
 ```
 
 ---
 
-## ⚙️ Setup
+## ⚙️ Setup (Step by Step)
 
-### 1. Install dependencies
+### Step 1 — Clone the repo
+
+```bash
+git clone https://github.com/your-username/wpbot.git
+cd wpbot
+```
+
+### Step 2 — Install dependencies
 
 ```bash
 npm install
 ```
 
-> **Note:** `better-sqlite3` requires a C++ build toolchain.
-> On Ubuntu/Debian: `sudo apt-get install -y build-essential python3`
-> On macOS: Xcode Command Line Tools (`xcode-select --install`)
+> Requires Node.js v18+. On Linux also run:
+> `sudo apt-get install -y build-essential python3`
 
-### 2. Configure environment variables
+### Step 3 — Add your API keys
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` and fill in:
+Open `.env` and fill in:
 
-| Variable | Description |
-|---|---|
-| `TWILIO_ACCOUNT_SID` | From Twilio Console |
-| `TWILIO_AUTH_TOKEN` | From Twilio Console |
-| `TWILIO_WHATSAPP_FROM` | Your Twilio sandbox number, e.g. `whatsapp:+14155238886` |
-| `MISTRAL_API_KEY` | From [console.mistral.ai](https://console.mistral.ai) |
-| `PORT` | Default: `3000` |
-
-### 3. Configure Twilio Webhook
-
-In your Twilio Console → Messaging → Sandbox Settings, set:
-
-```
-When a message comes in: POST https://your-domain.com/webhook
+```env
+TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+TWILIO_AUTH_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+TWILIO_WHATSAPP_FROM=whatsapp:+14155238886
+MISTRAL_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+PORT=3000
 ```
 
-Use **ngrok** for local development:
-```bash
-ngrok http 3000
-# Then set: https://xxxx.ngrok.io/webhook
-```
+- **Twilio keys** → [console.twilio.com](https://console.twilio.com) → Dashboard
+- **Mistral key** → [console.mistral.ai](https://console.mistral.ai) → API Keys
 
-### 4. Run
+### Step 4 — Start the server
 
 ```bash
 npm start
 ```
 
----
+### Step 5 — Expose to internet (for Twilio webhook)
 
-## 🌐 Admin Panel
-
-Open **http://localhost:3000/admin** to:
-- Register officer WhatsApp numbers
-- View all officers with their status, language, and registration date
-- See live stats (total / active / pending)
-
-Enter phone numbers as **digits only with country code**:
-- India example: `919876543210` (91 + 10-digit number)
-
----
-
-## 💬 Officer Flow (WhatsApp)
-
-```
-Admin registers officer
-        ↓
-Bot: "Reply JOIN to start / LEAVE to opt out"
-        ↓
-Officer replies JOIN
-        ↓
-Bot: "Reply 1 for English / 2 for Hindi"
-        ↓
-Officer replies 1 or 2
-        ↓
-Bot: "You're set! Daily digest at 8 AM IST"
-        ↓
-Every morning 8 AM IST:
-  Bot sends top 5 headlines
-        ↓
-Officer replies "3"
-        ↓
-Bot sends full 4-5 sentence AI summary of story 3
-  (in officer's preferred language)
+```bash
+ngrok http 3000
 ```
 
-**At any time**, officer can reply `LEAVE` to unsubscribe.
+Copy the URL it gives (e.g. `https://abc123.ngrok-free.app`) and go to:
+
+**Twilio Console → Messaging → Try it out → Send a WhatsApp message → Sandbox Settings**
+
+Set **"When a message comes in"** to:
+```
+https://abc123.ngrok-free.app/webhook
+```
 
 ---
 
-## 📰 News Sources (RSS Feeds)
+## Admin Panel
 
-| Source | Feed |
-|---|---|
-| NDTV | India news feed |
-| Times of India | Top stories |
-| Hindustan Times | India news |
-| The Hindu | National news |
+Open **http://localhost:3000/admin** in your browser.
 
-**Filtered keywords:** crime, arrest, court, verdict, police, disaster, cyclone, flood, explosion, violence, and 40+ more relevant terms.
+- Enter officer name + 10-digit number (country code +91 added automatically)
+- Choose language (English or Hindi)
+- Click **Register & Send Welcome**
 
 ---
 
-## 🤖 AI Functions (Mistral)
+## 💬 How It Works (User's Side)
 
-| Function | Output |
-|---|---|
-| `getOneLineHeading()` | ~10-word headline for digest list |
-| `getFullSummary()` | 4–5 sentence story summary |
-| `translateToHindi()` | Full Hindi translation of any text |
+```
+1. User receives WhatsApp message from bot
+2. They reply: JOIN
+3. Bot asks: English or Hindi? (reply 1 or 2)
+4. Bot confirms and immediately sends today's top 5 headlines
+5. User replies "3" → gets full summary of story 3
+6. Every morning 8 AM → new digest is sent automatically
+7. Reply LEAVE anytime to unsubscribe
+```
 
-Model used: `mistral-small-latest` (fast + cost-effective)
+> ⚠️ **Twilio Sandbox:** Each user must first send the sandbox join code
+> (e.g. `join sandy-kitten`) to the Twilio number before the bot can message them.
+> This is only needed for testing — production Twilio accounts don't require it.
 
 ---
 
-## 🧪 Manual Digest Trigger (Testing)
+## 🧪 Test Without Waiting for 8 AM
+
+Click **"Send Digest Now"** in the admin panel, or run:
 
 ```bash
 curl -X POST http://localhost:3000/admin/trigger-digest
 ```
 
-This immediately runs the daily digest for all active officers — useful for testing without waiting for 8 AM.
-
----
-
-## 🗄️ Database Schema
-
-**Table: officers**
-| Column | Type | Notes |
-|---|---|---|
-| id | INTEGER | Auto-increment PK |
-| phone | TEXT | Unique, digits only |
-| status | TEXT | `pending` / `active` / `left` |
-| language | TEXT | `english` / `hindi` |
-| registered_at | DATETIME | Auto timestamp |
-
-**Table: sessions**
-| Column | Type | Notes |
-|---|---|---|
-| phone | TEXT | Primary key |
-| step | TEXT | `waiting_join` / `waiting_language` / `active` |
-| articles | TEXT | JSON array of last digest articles |
-
 ---
 
 ## 📦 Dependencies
 
-- **express** — HTTP server
-- **better-sqlite3** — SQLite database (sync, fast)
-- **node-cron** — Cron scheduler for 8 AM digest
-- **twilio** — WhatsApp message sending
-- **@mistralai/mistralai** — AI summaries and translation
-- **rss-parser** — Parse RSS feeds from news sources
-- **dotenv** — Environment variable management
+Listed in `package.json`. Install all with `npm install`:
+
+- `express` — web server
+- `better-sqlite3` — database
+- `node-cron` — 8 AM scheduler
+- `twilio` — WhatsApp messaging
+- `@mistralai/mistralai` — AI summaries
+- `rss-parser` — news feeds
+- `dotenv` — environment variables
