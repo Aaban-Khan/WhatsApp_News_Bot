@@ -1,0 +1,23 @@
+# Environment variables — NEVER push this
+.env
+
+# Database — contains real officer data
+officers.db
+
+# Dependencies — too large, run npm install to recreate
+node_modules/
+
+# Python virtual env (not needed but just in case)
+.venv/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
