@@ -107,7 +107,7 @@ router.get("/", (req, res) => {
     <div style="font-size:1.8rem">🚔</div>
     <div>
       <h1>WhatsApp News Bot — Admin Panel</h1>
-      <span>India News Digest for Police Officers</span>
+      <span>India News Digest</span>
     </div>
   </header>
 
@@ -133,11 +133,11 @@ router.get("/", (req, res) => {
 
   <!-- Register -->
   <div class="card">
-    <h2>➕ Register New Officer</h2>
+    <h2>➕ Register New User</h2>
     <form method="POST" action="/admin/register">
       <div class="form-grid">
         <div class="form-group">
-          <label>Officer Name</label>
+          <label>User Name</label>
           <input type="text" name="name" placeholder="e.g. Rajesh Kumar" />
         </div>
         <div class="form-group">
@@ -163,11 +163,11 @@ router.get("/", (req, res) => {
     </form>
   </div>
 
-  <!-- Officers Table -->
+  <!--Users Table -->
   <div class="card">
-    <h2>👮 Registered Officers</h2>
+    <h2> Registered Users</h2>
     ${officers.length === 0
-      ? `<p class="empty">No officers registered yet.</p>`
+      ? `<p class="empty">No user registered yet.</p>`
       : `<div style="overflow-x:auto"><table>
           <thead><tr>
             <th>#</th><th>Name</th><th>Phone</th><th>Status</th><th>Language</th><th>Registered</th><th>Actions</th>
@@ -180,10 +180,10 @@ router.get("/", (req, res) => {
   <!-- Trigger Digest -->
   <div class="card">
     <h2>📤 Send Digest Now</h2>
-    <p style="font-size:.88rem;color:#94a3b8;margin-bottom:1rem">Send today's news to all active officers immediately.</p>
+    <p style="font-size:.88rem;color:#94a3b8;margin-bottom:1rem">Send today's news to all active users immediately.</p>
     <form method="POST" action="/admin/trigger-digest"
-      onsubmit="return confirm('Send digest to all active officers now?')">
-      <button class="btn btn-warning" type="submit">📨 Send Digest to All Active Officers</button>
+      onsubmit="return confirm('Send digest to all active users now?')">
+      <button class="btn btn-warning" type="submit">📨 Send Digest to All Active Users</button>
     </form>
   </div>
 </div>
@@ -191,12 +191,12 @@ router.get("/", (req, res) => {
 <!-- Edit Modal -->
 <div class="overlay" id="editOverlay">
   <div class="modal">
-    <h3>✏️ Edit Officer</h3>
+    <h3>✏️ Edit User</h3>
     <form method="POST" action="/admin/edit" id="editForm">
       <input type="hidden" name="id" id="editId"/>
       <div class="form-group">
         <label>Name</label>
-        <input type="text" name="name" id="editName" placeholder="Officer name"/>
+        <input type="text" name="name" id="editName" placeholder="User name"/>
       </div>
       <div class="form-group">
         <label>Phone (read-only)</label>
